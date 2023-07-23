@@ -100,9 +100,7 @@ FPOE_Rankings_2015_2022 <- punts_2015_2022 %>%
   group_by(punter_player_name, posteam, season) %>%
   summarise(total_punts = n(),
             total_FPOE = sum(FPOE, na.rm = T),
-            FPOE_per_punt = total_FPOE/total_punts,
-            net_yards = sum(net_punt_yards, na.rm = T),
-            avg_net = mean(net_punt_yards)) %>%
+            FPOE_per_punt = total_FPOE/total_punts) %>%
   filter(total_punts >= 30) %>%
   rename(team_abbr = posteam)
 
