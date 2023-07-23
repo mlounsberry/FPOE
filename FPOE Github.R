@@ -100,24 +100,24 @@ FPOE_Rankings_2015_2022 <- punts_2015_2022 %>%
   group_by(punter_player_name, posteam, season) %>%
   summarise(total_punts = n(),
             total_FPOE = sum(FPOE, na.rm = T),
-            FPOE_per_punt = total_FPOE/total_punts) %>%
+            FPOE_per_punt = total_FPOE/total_punts,
+            net_yards = sum(net_punt_yards, na.rm = T),
+            avg_net = mean(net_punt_yards)) %>%
   filter(total_punts >= 30) %>%
   rename(team_abbr = posteam)
 
 YearToYear <- FPOE_Rankings_2015_2022 %>% 
   arrange(punter_player_name, desc(season)) %>%
   group_by(punter_player_name) %>%
-  summarise(Y1 = lead(FPOE_per_punt), Y2 = FPOE_per_punt, .groups = 'drop') %>%
+  summarise(Y1 = lead(total_FPOE), Y2 = total_FPOE, .groups = 'drop') %>%
   na.omit
 
 eq <- function(x,y) {
   m <- lm(y ~ x)
   as.character(
     as.expression(
-      substitute(italic(y) == a + b %.% italic(x)*","~~italic(r)^2~"="~r2,
-                 list(a = format(coef(m)[1], digits = 4),
-                      b = format(coef(m)[2], digits = 4),
-                      r2 = format(summary(m)$r.squared, digits = 3)))
+      substitute(~~italic(r)^2~"="~r2,
+                 list(r2 = format(summary(m)$r.squared, digits = 2)))
     )
   )
 }
@@ -125,11 +125,7 @@ eq <- function(x,y) {
 YearToYear %>% ggplot(aes(x = Y1, y = Y2)) +
   geom_point() +
   geom_smooth(method="lm",se=FALSE) +
-  geom_text(x = -2.5, y = 3, label = eq(YearToYear$Y1,YearToYear$Y2), parse = TRUE) +
-  labs(title = "Year To Year Comparison of FPOE/Punt",
+  geom_text(x = -200, y = 300, label = eq(YearToYear$Y1,YearToYear$Y2), parse = TRUE) +
+  labs(title = "Year To Year Comparison of Total FPOE",
        subtitle = "2015-2022",
-       caption = "Chart by @Mike_Lounsberry, data from nflreadr") 
-
-
-
-
+       caption = "Chart by @Mike_Lounsberry, data from nflreadr")
